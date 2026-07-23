@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Thời Khóa Biểu Maker</title>
+<title>Thời Khóa Biểu</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
@@ -528,12 +528,29 @@ function showError(msg){
 
 // ---------- Export: image ----------
 document.getElementById('exportImgBtn').addEventListener('click', ()=>{
-  const target = document.getElementById('boardWrap');
-  html2canvas(target, {scale:2, backgroundColor:'#ffffff'}).then(canvas=>{
+  const target = document.getElementById('board');
+
+  // temporarily clear the scroll-pin transform so the capture reflects
+  // the board's true layout, not whatever scroll position the user is at
+  const pinnedEls = document.querySelectorAll('.time-col, .head-cell.time-head');
+  const prevTransforms = [];
+  pinnedEls.forEach(el=>{ prevTransforms.push(el.style.transform); el.style.transform = 'none'; });
+
+  html2canvas(target, {
+    scale: 2,
+    backgroundColor: '#ffffff',
+    width: target.scrollWidth,
+    height: target.scrollHeight,
+    windowWidth: target.scrollWidth,
+    windowHeight: target.scrollHeight
+  }).then(canvas=>{
+    pinnedEls.forEach((el,i)=>{ el.style.transform = prevTransforms[i]; });
     const link = document.createElement('a');
     link.download = 'thoi-khoa-bieu.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+  }).catch(()=>{
+    pinnedEls.forEach((el,i)=>{ el.style.transform = prevTransforms[i]; });
   });
 });
 
